@@ -28,32 +28,13 @@ import java.util.Arrays;
 @Configuration
 @EnableAuthorizationServer
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter  {
-
-    static final String CLIEN_ID = "devglan-client";
-    static final String CLIENT_SECRET = "devglan-secret";
-    static final String GRANT_TYPE = "password";
-    static final String AUTHORIZATION_CODE = "authorization_code";
-    static final String REFRESH_TOKEN = "refresh_token";
-    static final String IMPLICIT = "implicit";
-    static final String SCOPE_READ = "read";
-    static final String SCOPE_WRITE = "write";
-    static final String TRUST = "trust";
-    static final int ACCESS_TOKEN_VALIDITY_SECONDS = 1*60*60;
-    static final int FREFRESH_TOKEN_VALIDITY_SECONDS = 6*60*60;
-    static final String privateKey = "PRIVATE";
-    static final String publicKey = "PUBLIC";
     @Autowired
     private TokenStore tokenStore;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
     PasswordEncoder passwordEncoder;
-//    @Autowired
-//    ResourceServerTokenServices tokenServices;
-//    @Autowired
-//    JwtAccessTokenConverter accessTokenConverter;
-//    @Autowired
-//    Environment env;
+
     @Override
     public void configure(
             AuthorizationServerSecurityConfigurer oauthServer)
@@ -61,7 +42,6 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         oauthServer
                 .tokenKeyAccess("permitAll()")
                 .checkTokenAccess("isAuthenticated()");
-//        oauthServer.allowFormAuthenticationForClients();
 
     }
     @Override
@@ -93,9 +73,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     public JwtAccessTokenConverter tokenEnhancer() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-//        converter.setSigningKey(privateKey);
-//        converter.setVerifierKey(publicKey);
+
         return converter;
     }
-
 }

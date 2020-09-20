@@ -3,6 +3,7 @@ package com.asavin.hello.service;
 import com.asavin.hello.entity.Coment;
 import com.asavin.hello.entity.Image;
 import com.asavin.hello.entity.Post;
+import com.asavin.hello.entity.User;
 import com.asavin.hello.repository.ComentRepository;
 import com.asavin.hello.repository.ImageRepository;
 import com.asavin.hello.repository.PostRepositpry;
@@ -20,6 +21,8 @@ public class PostServiceImpl implements PostService {
     ComentRepository comentRepository;
     @Autowired
     ImageRepository imageRepository;
+    @Autowired
+    WebSocketService webSocketService;
     @Override
     public void deletePost(Long id) {
         postRepositpry.deleteById(id);
@@ -84,4 +87,14 @@ public class PostServiceImpl implements PostService {
             return imageRepository.findAllDesc(PageRequest.of(0, quantity));
         else
             return imageRepository.findAllDesc();    }
+
+    @Override
+    public Coment writeComent(User user, String text, Post post) {
+        Coment coment = new Coment();
+        coment.setUser(user);
+        coment.setPost(post);
+        coment.setText(text);
+
+        return comentRepository.saveAndFlush(coment);
+    }
 }

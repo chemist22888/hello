@@ -54,10 +54,6 @@ public class SecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().antMatchers("/registerUser","/confirmRegistration","socket/info","/login","/oauth/token","/socket/websocket","/socket/**","/").permitAll()
                 .anyRequest().authenticated()
                 .antMatchers("/admin/**").hasRole("admin")
-//                .authenticated()
-//                .and()
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                .and().httpBasic()
 
                 .and().cors()
                 .and().csrf().disable();
@@ -68,28 +64,12 @@ public class SecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         configuration.setAllowedOrigins(Collections.unmodifiableList(Arrays.asList("*")));
         configuration.setAllowedMethods(Collections.unmodifiableList(Arrays.asList("HEAD",
                 "GET", "POST", "PUT", "DELETE", "PATCH")));
-        // setAllowCredentials(true) is important, otherwise:
-        // The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.
         configuration.setAllowCredentials(true);
-        // setAllowedHeaders is important! Without it, OPTIONS preflight request
         configuration.setAllowedHeaders(Collections.unmodifiableList(Arrays.asList("Authorization", "Cache-Control", "Content-Type")));
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-//    @Bean
-//    public WebMvcConfigurer corsConfigurer() {
-//        return new WebMvcConfigurerAdapter() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/user/login1")
-//                        .allowedMethods("*")
-//                        .allowedOrigins("http://localhost:4200");
-//            }
-//        };
-//    }
-
-
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());
@@ -110,10 +90,6 @@ public class SecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         loggingFilter.setMaxPayloadLength(64000);
         return loggingFilter;
     }
-//    @Bean
-//    public Hibernate5Module datatypeHibernateModule() {
-//        return new Hibernate5Module();
-//    }
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider

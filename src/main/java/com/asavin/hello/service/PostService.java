@@ -17,5 +17,5 @@ public interface PostService {
     List<Post> getPostWhereIdLessLimit(Long id, int quantity);
     List<Coment> getComentWhereIdLessLimit(Long id, int quantity);
     List<Image> getImageWhereIdLessLimit(Long id, int quantity);
-
+    Coment writeComent(User user,String text,Post post);
 }

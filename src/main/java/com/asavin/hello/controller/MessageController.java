@@ -40,15 +40,11 @@ public class MessageController {
 
     @JsonView(MessageViewJson.MessageShortDetails.class)
     @GetMapping("chat/{id}")
-//    @ResponseBody
     public Chat getChat(@PathVariable String id) {
        if(id.contains("c")) {
            Chat chat = chatService.getChatById(Long.parseLong(id.substring(1)));
-           if(chat.getUsers().contains(userService.getMe()))
-               return chat;
-           else
-               return null;
-       }
+           return chat.getUsers().contains(userService.getMe())?chat:null;
+          }
        else
            return chatService.getDialogWithUser(Long.parseLong(id));
     }
@@ -57,4 +53,3 @@ public class MessageController {
         System.out.println(body);
     }
 }
-//TODO заменить me на activeUser,просмотреть как работает одновременно для нескольких пользователей

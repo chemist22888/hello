@@ -4,8 +4,7 @@ package com.asavin.hello.entity;
 import com.asavin.hello.json.ChatViewJson;
 import com.asavin.hello.json.MessageViewJson;
 import com.asavin.hello.json.UserViewJson;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -13,13 +12,15 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-//@JsonPropertyOrder("id")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Chat {
-  @JsonView({UserViewJson.UserFullDetails.class,UserViewJson.UserInChatDetails.class})
+    @JsonCreator
+    public Chat(@JsonProperty("id") long id) {
+        this.id = id;
+    }
 
-  private long id;
-  private List<User> users;
+    private long id;
+    private List<User> users;
 
     @Column
     public String getName() {
@@ -31,50 +32,55 @@ public class Chat {
     }
 
     private String name;
-  @ManyToMany
-  @Fetch(FetchMode.JOIN)
-  @JoinTable(
-          name = "USER_CHAT",
-          joinColumns = { @JoinColumn(name = "chat_id") },
-          inverseJoinColumns = { @JoinColumn(name = "user_id") }
-  )
-  @JsonView({UserViewJson.UserFullDetails.class,UserViewJson.UserInChatDetails.class})
 
-  public List<User> getUsers() {
-    return users;
-  }
+    @ManyToMany
+    @Fetch(FetchMode.JOIN)
+    @JoinTable(
+            name = "USER_CHAT",
+            joinColumns = {@JoinColumn(name = "chat_id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_id")}
+    )
+    @JsonView({UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
 
-  public void setUsers(List<User> users) {
-    this.users = users;
-  }
+    public List<User> getUsers() {
+        return users;
+    }
 
-  @OneToMany(mappedBy = "chat")
-//  @Fetch(FetchMode.JOIN)
-  @JsonView({MessageViewJson.MessageShortDetails.class})
-  public List<Message> getMessages() {
-    return messages;
-  }
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
 
-  public void setMessages(List<Message> message) {
-    this.messages = message;
-  }
-  private List<Message> messages;
+    @OneToMany(mappedBy = "chat", orphanRemoval = true)
+    @JsonView({MessageViewJson.MessageShortDetails.class})
+    public List<Message> getMessages() {
+        return messages;
+    }
 
-  @Id
-  @GeneratedValue(strategy=GenerationType.IDENTITY)
-  public long getId() {
-    return id;
-  }
+    public void setMessages(List<Message> message) {
+        this.messages = message;
+    }
+
+    private List<Message> messages;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonView({UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
+    public long getId() {
+        return id;
+    }
 
     public Chat(List<User> users, String name, List<Message> messages) {
         this.users = users;
         this.name = name;
         this.messages = messages;
     }
-    public Chat(){}
 
+    public Chat() {
+    }
+
+    @JsonProperty("id")
     public void setId(long id) {
-    this.id = id;
-  }
+        this.id = id;
+    }
 
 }

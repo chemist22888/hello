@@ -1,9 +1,6 @@
 package com.asavin.hello.controller;
 
-import com.asavin.hello.entity.Chat;
-import com.asavin.hello.entity.FriendRequest;
-import com.asavin.hello.entity.Message;
-import com.asavin.hello.entity.User;
+import com.asavin.hello.entity.*;
 import com.asavin.hello.json.ChatViewJson;
 import com.asavin.hello.json.MessageViewJson;
 import com.asavin.hello.json.UserViewJson;
@@ -13,8 +10,11 @@ import com.asavin.hello.service.WebSocketService;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
@@ -43,8 +43,9 @@ public class WebSocketController {
 
     @JsonView(MessageViewJson.MessageShortDetails.class)
     @MessageMapping("/send/message/{chatId}")
-    @SendToUser("/chat")
-    public Message chat(@DestinationVariable String chatId, @RequestBody Message message, Principal principal) throws Exception {
+    public Object chat(@Header("simpSessionId") String sessionId
+,@DestinationVariable String chatId, @RequestBody Message message, Principal principal) throws Exception {
+        System.out.println(sessionId+"sesid");
         Chat chat = null;
         if(chatId.toCharArray()[0] == 'c'){
             try {
@@ -56,24 +57,13 @@ public class WebSocketController {
                 chat = chatService.getDialogWithUser(Long.parseLong(chatId));
             }catch (Exception e){e.printStackTrace();}
         }
-        String me = "indef";
-
-        try {
-            me = principal.getName();
-        }catch (Exception e){e.printStackTrace();}
-
-        message = chatService.send(message.getText(),chat.getId());
-
-        System.out.println(message.getText());
-//        message.setChat(null);
-//        webSocketService.sendMessage(1l,chatService.getChatById(Long.valueOf(1)),me+","+message);
+        message = chatService.send(message.getText(),message.getChat().getId());
+        webSocketService.sendMessage(userService.getMe().getId(),chat,message);
         return message;
-//        this.messagingTemplate.convertAndSend("/chat/"+chatId,message+"resended");
     }
 
     @JsonView(MessageViewJson.MessageShortDetails.class)
     @MessageMapping("/friend")
-//    @SendToUser("/chat")
     public void request(@RequestParam("operation") int operation, Long id) throws Exception {
         User me = userService.getMe();
         User other = userService.findUserById(id);
@@ -94,30 +84,5 @@ public class WebSocketController {
 
         }
         webSocketService.sendFriendStatus(other.getUsername(),other,operation);
-
-//
-//        Chat chat = null;
-//        if(chatId.toCharArray()[0] == 'c'){
-//            try {
-//                chat = chatService.getChatById(Long.parseLong(chatId.substring(1)));
-//            }catch (Exception e){e.printStackTrace();}
-//        }
-//        else {
-//            try {
-//                chat = chatService.getDialogWithUser(Long.parseLong(chatId));
-//            }catch (Exception e){e.printStackTrace();}
-//        }
-//        String me = "indef";
-//
-//        try {
-//            me = principal.getName();
-//        }catch (Exception e){e.printStackTrace();}
-//
-//        message = chatService.send(message.getText(),chat.getId());
-//
-//        System.out.println(message.getText());
-//        message.setChat(null);
-//        webSocketService.sendMessage(1l,chatService.getChatById(Long.valueOf(1)),me+","+message);
-//        this.messagingTemplate.convertAndSend("/chat/"+chatId,message+"resended");
     }
 }

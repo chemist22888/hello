@@ -10,7 +10,6 @@ public class FriendRequest {
     public static final int DELETE_FRIEND = -2;
     public static final int DECLINE_FRIEND_REQUEST = 0;
 
-
     private Long id;
     private User from;
     private User to;

@@ -1,6 +1,7 @@
 package com.asavin.hello.service;
 
 import com.asavin.hello.entity.Coment;
+import com.asavin.hello.entity.Image;
 import com.asavin.hello.entity.Post;
 import com.asavin.hello.entity.User;
 
@@ -16,7 +17,7 @@ public interface UserService {
     User findUserById(Long id);
     User findUserByUserName(String username);
     User findUserByUserNameOrId(String username);
-    Post writePost(String text);
+    Post writePost(Post post);
     void makeFriends(User user1,User user2);
     void unbound(String id1,String id2);
     void unbound(User user1,User user2);
@@ -33,7 +34,7 @@ public interface UserService {
     void cancelFriendRequest(User from,User to);
     void writeComment(User user,Post post,String text);
     List<Coment>getUsersComents(User user);
-    void likePost(Long userId,Long postId);
+    void likePost(User user,Long postId);
     void applyRegistration(String username, String password, String email);
     void confirmRegistration(String uuid);
     void pingOnline(User user);
@@ -41,4 +42,5 @@ public interface UserService {
     void deleteUser(User user);
     void deleteUserById(Long id);
     void deleteUserByUsername(String username);
+    void setAvatar(User user, Image image);
 }

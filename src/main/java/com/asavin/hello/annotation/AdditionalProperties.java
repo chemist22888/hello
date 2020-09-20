@@ -11,9 +11,7 @@ public @interface AdditionalProperties {
     enum Properties{
         friendStatus,
         onlineStatus;
-        enum n{
 
-        }
     }
     Properties[]properties();
 

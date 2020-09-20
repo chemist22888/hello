@@ -3,6 +3,7 @@ package com.asavin.hello.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,14 +28,23 @@ import java.util.Properties;
 public class WebConfig extends WebMvcConfigurerAdapter {
     @Autowired
     JavaMailSender mailSender;
+    @Value("${email.host}")
+    private String host;
+    @Value("${email.port}")
+    private Integer port;
+    @Value("${email.username}")
+    private String username;
+    @Value("${email.password}")
+    private String password;
+
     @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
+        mailSender.setHost(host);
+        mailSender.setPort(port);
 
-        mailSender.setUsername("gjhffjg1@gmail.com");
-        mailSender.setPassword("qweasdgh");
+        mailSender.setUsername(username);
+        mailSender.setPassword(password);
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");

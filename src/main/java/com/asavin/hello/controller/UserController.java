@@ -68,8 +68,11 @@ public class UserController {
 
     @PostMapping("/write")
     @JsonView(UserViewJson.UserInChatDetails.class)
-    public Post write(@RequestParam String text) {
-        return userService.writePost(text);
+    public Post write(@RequestBody Post post) {
+        post.getImages().forEach(image -> System.out.println(image.getId()+" "+image.getName()));
+        Post post1 = userService.writePost(post);
+        System.out.println(post1.getText());
+        return post1;
     }
     @CrossOrigin(origins = "http://localhost:4200")
 
@@ -86,13 +89,6 @@ public class UserController {
         return (res);
     }
 
-
-    @PostMapping("/writeComent")
-    @CrossOrigin(origins = "http://localhost:4200")
-    public void writeComent(Long postId,String text) {
-        Post post = postRepositpry.findById(postId).get();
-        comentRepository.save(new Coment(userService.getMe(),post,text));
-    }
     @JsonView(UserViewJson.UserInChatDetails.class)
 
     @PostMapping("/myComments")
@@ -120,32 +116,20 @@ public class UserController {
     @PostMapping("/unbond")
     @JsonView(UserViewJson.UserInChatDetails.class)
     public void unbond(@RequestParam String username) throws Throwable {
-//        User newFriend = getUserById(id);
-
-
         userService.unbound(userService.getMe().getUsername(), username);
-//        webSocketService.sendFriendStatus(username,userService.getMe().getUsername(),0);
-
-//        return  newFriend;
     }
 
     @PostMapping("applyFriendReq")
     public void applyRequest(@RequestParam String username) {
         userService.applyFriendRequest(userService.getMe().getUsername(), username);
-//        webSocketService.sendFriendStatus(username,userService.getMe().getUsername(),-1);
     }
 
     @PostMapping("acceptFriendReq")
     public void acceptRequest(@RequestParam String username) {
         userService.acceptFriendRequest(username,userService.getMe().getUsername());
-//        webSocketService.sendFriendStatus(username,userService.getMe().getUsername(),2);
-
     }
-
     @PostMapping("declineFriendReq")
     public void declineRequest(@RequestParam String username) {
-//        webSocketService.sendFriendStatus(username,userService.getMe().getUsername(),0);
-
         userService.declineFriendRequest(username, userService.getMe().getUsername());
     }
 
@@ -153,15 +137,10 @@ public class UserController {
     public void cancelRequest(@RequestParam String username) {
         userService.cancelFriendRequest(userService.getMe().getUsername(),username);
     }
-
-//@RequestMapping(method = RequestMethod.OPTIONS,path = "foo")
-//void ofoo(){}
     @GetMapping("/testBd")
     public List<Post> test() {
         return userService.getNewsOfUsersFriend(userService.getMe());
-
     }
-
     @GetMapping("foo")
     public String foo(@RequestHeader String foo){
         return "{\"test\":\""+foo+"\"}";
@@ -181,17 +160,8 @@ public class UserController {
         userService.pingOnline(userService.getMe());
     }
 
-
-//    private User getUserById(String id) {
-//        User newFriend;
-//        try {
-//            long uId = Long.parseLong(id);
-//            newFriend = userService.findUserById(uId);
-//            System.out.println("longid is " + id);
-//        } catch (NumberFormatException e) {
-//            newFriend = userService.findUserByUserName(id);
-//            System.out.println("username is " + id);
-//        }
-//        return newFriend;
-//    }
+    @PostMapping("/loadAvatar")
+    public void loadAvatar(@RequestParam Long image){
+        this.userService.setAvatar(userService.getMe(),new Image(image));
+    }
 }

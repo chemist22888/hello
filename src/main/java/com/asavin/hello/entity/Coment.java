@@ -36,7 +36,6 @@ public class Coment {
         this.id = id;
     }
     @ManyToOne
-  //  @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "user_id",referencedColumnName = "id")
     public User getUser() {
         return user;
@@ -47,7 +46,6 @@ public class Coment {
     }
     @ManyToOne
     @JoinColumn(name = "POST_ID",referencedColumnName = "id")
-  //  @Fetch(FetchMode.JOIN)
     public Post getPost() {
         return post;
     }
@@ -64,7 +62,6 @@ public class Coment {
         this.text = text;
     }
     @JsonIgnore
-  //  @Fetch(FetchMode.JOIN)
     Post post;
     String text;
 }

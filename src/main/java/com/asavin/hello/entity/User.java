@@ -50,17 +50,12 @@ public class User implements UserDetails {
     private Image avatar;
 
     public Set<User> getFriends() {
-        //    @JsonProperty
-//    @JsonView({UserViewJson.UserInChatDetails.class})
-//    System.out.println(friends.size());
-        System.out.println(id);
         return friends;
     }
 
     public void setFriends(Set<User> friends) {
         this.friends = friends;
     }
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,14 +84,11 @@ public class User implements UserDetails {
     )
     @OrderBy(value = "id asc")
     @JsonIgnore
-//  @Fetch(FetchMode.JOIN)
     private List<Chat> chats;
-//    @JsonIgnore
 
     @OneToOne
     @JoinColumn(name = "wall_id")
     @JsonView({UserViewJson.UserFullDetails.class})
-//  @Fetch(FetchMode.JOIN)
     private Wall wall;
     private String email;
 
@@ -121,20 +113,12 @@ public class User implements UserDetails {
     }
 
     @ManyToMany(fetch = FetchType.LAZY)
-//  @JsonIgnore
-//  @Fetch(FetchMode.JOIN)
     @JoinTable(
             name = "friends",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "friend_id")}
     )
-//  @JsonManagedReference
-//  @JsonBackReference
-//  @JsonValue
-//  @JsonSerialize(converter = UsersShortSerializer.class)
     @JsonView(UserViewJson.UserFullDetails.class)
-//  @JsonIgnore
-//  @org.codehaus.jackson.annotate.JsonIgnore
     @JsonIgnoreProperties({"friends", "wall"})
     private Set<User> friends;
 
@@ -153,7 +137,6 @@ public class User implements UserDetails {
     public void setChats(List<Chat> chats) {
         this.chats = chats;
     }
-
     public Long getId() {
         return id;
     }

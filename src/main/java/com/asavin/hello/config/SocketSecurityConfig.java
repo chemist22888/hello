@@ -17,9 +17,6 @@ public class SocketSecurityConfig
             MessageSecurityMetadataSourceRegistry messages) {
         messages.simpTypeMatchers(CONNECT, UNSUBSCRIBE, DISCONNECT, HEARTBEAT)
                 .permitAll();
-//                .anyMessage().authenticated();
-//                .simpTypeMatchers(CONNECT, UNSUBSCRIBE, DISCONNECT).permitAll()
-//                .simpSubscribeDestMatchers("/**").authenticated();
     }
     @Override
     protected boolean sameOriginDisabled() {

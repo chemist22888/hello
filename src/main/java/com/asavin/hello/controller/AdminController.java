@@ -7,12 +7,8 @@ import com.asavin.hello.entity.User;
 import com.asavin.hello.service.PostService;
 import com.asavin.hello.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.jws.soap.SOAPBinding;
 import java.util.List;
 
 @RestController
@@ -22,8 +18,6 @@ public class AdminController {
     UserService userService;
     @Autowired
     PostService postService;
-//    @Autowired
-//    Po userService;
 
     public List<User> getUsers(@RequestParam(defaultValue = "-1",required = false) Long lastId,@RequestParam(defaultValue = "-1",required = false) int quantity) {
         return userService.getUserWhereIdLessLimit(lastId, quantity);
@@ -40,10 +34,11 @@ public class AdminController {
     public List<Image> getImages(@RequestParam(defaultValue = "-1") int lastId,@RequestParam(defaultValue = "-1") int quantity) {
         return postService.getAllImages();
     }
+    @PostMapping("/dropPost")
+    public void dropPost(@RequestParam("id") Long id){postService.deletePost(id);}
+    @PostMapping("/dropComment")
+    public void dropComment(@RequestParam Long id){postService.deleteComment(id);}
+    @PostMapping("/dropImage")
 
-    public User getUser(Long id){return userService.findUserById(id);}
-    public void dropUser(Long id){userService.deleteUserById(id);}
-    public void dropPost(Long id){postService.deletePost(id);}
-    public void dropComment(Long id){postService.deleteComment(id);}
-    public void dropImage(Long id){postService.deleteImage(id);}
+    public void dropImage(@RequestParam Long id){postService.deleteImage(id);}
 }

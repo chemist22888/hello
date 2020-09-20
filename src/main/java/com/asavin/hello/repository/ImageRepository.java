@@ -34,4 +34,5 @@ public interface ImageRepository extends JpaRepository<Image,Long> {
     List<Image>findAllDesc();
     @Query("select i from Image i order by i.id desc ")
     List<Image>findAllDesc(Pageable pageable);
+    Image findByName(String name);
 }

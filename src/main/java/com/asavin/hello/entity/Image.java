@@ -11,10 +11,17 @@ import java.util.List;
 
 @Entity
 public class Image {
+    public Image(Long id) {
+        this.id = id;
+    }
+
+    Long id;
+
     @GeneratedValue
     @Column
     @Id
-    Long id;
+    @JsonValue
+    @JsonView({UserViewJson.UserInChatDetails.class,UserViewJson.UserFullDetails.class})
 
     public Long getId() {
         return id;
@@ -24,32 +31,13 @@ public class Image {
         this.id = id;
     }
 
+    @Column
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
-
-//    public List<Post> getPosts() {
-//        return posts;
-//    }
-//
-//    public void setPosts(List<Post> posts) {
-//        this.posts = posts;
-//    }
-
-    @Column
-    @JsonValue
     String name;
-//    @JsonIgnore
-//    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-//    @Column
-//    @JoinTable(
-//            name = "POST_IMAGE",
-//            joinColumns = { @JoinColumn(name = "image_Id") },
-//            inverseJoinColumns = { @JoinColumn(name = "post_id") }
-//    )
-//    List<Post> posts;
+    public Image(){}
 }

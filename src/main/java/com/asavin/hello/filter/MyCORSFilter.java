@@ -21,19 +21,14 @@ public class MyCORSFilter implements Filter {
 
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
-//        System.out.println(getBody(request));
 
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
         response.setHeader("Access-Control-Allow-Headers", "*");
         response.setHeader("Access-Control-Allow-Methods",
                 "*");
-//        response.setHeader("Access-Control-Allow-[WDS] Live Reloading enabled.\nHeaders",
-//                    "*");
         response.setHeader("Access-Control-Allow-Credentials",
                     "true");
 
-//        System.out.println(getBody(request));
-        System.out.println("getBody(request)");
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
@@ -73,12 +68,4 @@ public class MyCORSFilter implements Filter {
         body = stringBuilder.toString();
         return body;
     }
-    public void init(FilterConfig filterConfig) {
-        // not needed
-    }
-
-    public void destroy() {
-        //not needed
-    }
-
 }

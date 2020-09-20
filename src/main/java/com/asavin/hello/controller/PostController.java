@@ -1,13 +1,13 @@
 package com.asavin.hello.controller;
 
+import com.asavin.hello.entity.Coment;
+import com.asavin.hello.entity.Image;
 import com.asavin.hello.entity.Post;
 import com.asavin.hello.entity.User;
 import com.asavin.hello.json.UserViewJson;
-import com.asavin.hello.repository.FriendRequestRepository;
-import com.asavin.hello.repository.PostRepositpry;
-import com.asavin.hello.repository.UserRepository;
-import com.asavin.hello.repository.WallRepository;
+import com.asavin.hello.repository.*;
 import com.asavin.hello.service.JsonService;
+import com.asavin.hello.service.PostService;
 import com.asavin.hello.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.codec.binary.Base64;
@@ -36,45 +36,48 @@ public class PostController {
     JsonService jsonService;
     @Autowired
     FriendRequestRepository friendRequestRepository;
-    @GetMapping("/image/{name}")
-    public void getImageAsByteArray(@PathVariable("name")String name, HttpServletResponse response) throws IOException {
-        File initialFile = new File("D://images/"+name+".png");
+    @Autowired
+    ImageRepository imageRepository;
+    @Autowired
+    PostService postService;
+    @GetMapping("/image/{id}")
+    public void getImageAsByteArray(@PathVariable("id")Long id, HttpServletResponse response) throws IOException {
+        String name = imageRepository.findById(id).get().getName();
+        File initialFile = new File("C://12/"+name);
         InputStream in = new FileInputStream(initialFile);
-        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+        response.setContentType(MediaType.IMAGE_PNG_VALUE);
         IOUtils.copy(in, response.getOutputStream());
     }
     @PostMapping("/loadImage")
-    public void loadImageAsByteArray(@RequestBody String recievedFile) throws IOException {
+    public String loadImageAsByteArray(@RequestBody String recievedFile) throws IOException {
         System.out.println(recievedFile.substring(0,30));
         try {
             recievedFile = recievedFile.substring(recievedFile.indexOf(",") + 1);
             byte[] decodedString = Base64.decodeBase64(recievedFile.getBytes());
-//            System.out.println(new String(decodedString));
 
-            File file = new File("D://1.png");
+            Image image = imageRepository.save(new Image());
+            image.setName(image.getId()+".png");
+            imageRepository.save(image);
+            File file = new File("C://12/"+image.getName());
+
             try (OutputStream os = new FileOutputStream(file)) {
                 os.write(decodedString);
+                return image.getId()+"";
             }
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
+        } catch (Throwable e) {
             e.printStackTrace();
-        }
+            return "error";
 
-//
-//        File initialFile = new File("D://images/"+name+".jpg");
-//        InputStream in = new FileInputStream(initialFile);
-//        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
-//        IOUtils.copy(in, response.getOutputStream());
+        }
     }
     @PostMapping("/likePost")
     public void likePost(@RequestParam("postId") Long postId){
-        userService.likePost(userService.getMe().getId(),postId);
+        userService.likePost(userService.getMe(),postId);
     }
-    //    @Autowired
-//    WebSocketService webSocketService;
-//    @GetMapping("/news")
-//    @JsonView(UserViewJson.UserFullDetails.class)
-//    public List<Post> getNewPosts() {
-//        return userService.getMe().getFriends();
-//    }
+
+    @PostMapping("/writeComent")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public Coment writeComent(@RequestParam Long postId, @RequestParam String text) {
+        return postService.writeComent(userService.getMe(),text,new Post(postId));
+    }
 }

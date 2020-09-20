@@ -11,8 +11,6 @@ public class JsonService {
     @Autowired
     ObjectMapper objectMapper;
     public <T>T fromJson(JsonNode sourceJson, Class<T> parseClass) throws Throwable {
-
-
         return objectMapper.readValue(objectMapper.writeValueAsString(sourceJson),parseClass); }
 
     public   JsonNode toJson(Object sourceObject, Class... views) throws Exception {

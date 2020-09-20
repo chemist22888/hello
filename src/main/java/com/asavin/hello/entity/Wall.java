@@ -13,7 +13,6 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-//@JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
 @JsonView({UserViewJson.UserFullDetails.class})
 
 public class Wall {
@@ -23,12 +22,10 @@ public class Wall {
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "wall")
     @OrderBy("id asc")
     @JsonView({UserViewJson.UserFullDetails.class})
-  //  @Fetch(FetchMode.JOIN)
     private List<Post>posts;
 
     @OneToOne(mappedBy = "wall", cascade = CascadeType.ALL,
             fetch = FetchType.LAZY, optional = false)
-  //  @Fetch(FetchMode.JOIN)
     @JsonIgnore
     private User user;
 

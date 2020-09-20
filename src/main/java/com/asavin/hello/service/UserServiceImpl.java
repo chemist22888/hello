@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -101,15 +102,12 @@ public class UserServiceImpl implements UserService {
             return findUserByUserName(id);
         }
     }
-
-    //TODO threadsafe - ?
     @Override
-    public Post writePost(String text) {
+    public Post writePost(Post post) {
         User me = getMe();
 
-        Post post = new Post();
-        post.setText(text);
         post.setWall(me.getWall());
+        post.setLikes(new ArrayList<>());
 
         return postRepositpry.save(post);
     }
@@ -272,32 +270,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void likePost(Long userId, Long postId) {
-        Like like = new Like(new User(userId), new Post(postId));
-        likeRepositpry.save(like);
+    public void likePost(User user, Long postId) {
+        if(!likeRepositpry.findByUserAndPost(user,new Post(postId)).isPresent())
+            likeRepositpry.save(new Like(user, new Post(postId)));
     }
 
     @Override
     public void applyRegistration(String username, String password, String email) {
+        password = passwordEncoder.encode(password);
         Registration registration = new Registration(email, username, password);
         registration.setRegistrationTime(Instant.now());
 
         registration = registrationRepository.save(registration);
 
-        String text = "To confirm account go to http://localhost:8080/register?confirmId=" + registration.getUuid().toString();
+        String text = "To confirm account go to http://localhost:4200/register?confirmId=" + registration.getUuid().toString();
         emailService.send("registration", text, email);
     }
 
     @Override
     public void confirmRegistration(String uuid) {
-        System.out.println(uuid);
+        System.out.println("confirmed"+uuid);
         registrationRepository.findById(UUID.fromString(uuid)).ifPresent(registration -> {
+            System.out.println("found");
             User user = new User();
             Wall wall = new Wall();
-
-            user.setPassword(passwordEncoder.encode(registration.getPassword()));
             user.setUsername(registration.getUsername());
             user.setEmail(registration.getEmail());
+            user.setPassword(registration.getPassword());
+            user.setRole("user");
 
             wall = wallRepository.save(wall);
             user.setWall(wall);
@@ -345,6 +345,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserByUsername(String username) {
 
+    }
+
+    @Override
+    public void setAvatar(User user, Image image) {
+        user.setAvatar(image);
+        userRepository.save(user);
     }
 
     @Override
