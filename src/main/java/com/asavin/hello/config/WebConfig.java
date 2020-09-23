@@ -14,6 +14,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -22,23 +23,25 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import javax.mail.internet.MimeMessage;
 import java.util.List;
 import java.util.Properties;
-
+@Component
 @Configuration
 @EnableWebMvc
 public class WebConfig extends WebMvcConfigurerAdapter {
-    @Autowired
-    JavaMailSender mailSender;
-    @Value("${email.host}")
+@Value("${mail.host}")
     private String host;
-    @Value("${email.port}")
+    @Value("${mail.port}")
     private Integer port;
-    @Value("${email.username}")
+    @Value("${mail.username}")
     private String username;
-    @Value("${email.password}")
+    @Value("${mail.password}")
     private String password;
+    @Value("${mail.smtp.ssl.trust}")
+    private String trust;
 
     @Bean
-    public JavaMailSender getJavaMailSender() {
+    public  JavaMailSender getJavaMailSender() {
+        System.out.println(host);
+        System.out.println(username);
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(host);
         mailSender.setPort(port);
@@ -51,7 +54,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.debug", "true");
-        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+        props.put("mail.smtp.ssl.trust",trust);
 
         return mailSender;
     }
