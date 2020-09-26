@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.*;
 import javax.persistence.*;
 
 @Entity(name = "likes")
+@Table(name="likes",
+        uniqueConstraints = {@UniqueConstraint(columnNames={"user_id", "post_id"})})
 public class Like {
     private long id;
 
