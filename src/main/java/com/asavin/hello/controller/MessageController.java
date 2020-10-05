@@ -48,8 +48,5 @@ public class MessageController {
        else
            return chatService.getDialogWithUser(Long.parseLong(id));
     }
-    @PostMapping("/log")
-    public void log( @RequestBody String body){
-        System.out.println(body);
-    }
+
 }

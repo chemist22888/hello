@@ -47,10 +47,8 @@ public class PostController {
     String imagesPath;
     @PostMapping("/loadImage")
     public Long loadImageAsByteArray(@RequestBody String recievedFile) {
-        System.out.println(recievedFile.substring(0,30));
         try {
             String type = recievedFile.substring(11,14);
-            System.out.println("typeimage is "+type);
             recievedFile = recievedFile.substring(recievedFile.indexOf(",") + 1);
             byte[] decodedString = Base64.decodeBase64(recievedFile.getBytes());
 

@@ -98,7 +98,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getMe() {
-        System.out.println("service thread " + Thread.currentThread().getId());
         String username = getUsername();
         return userRepository.findByUsernameFull(username);
     }
@@ -110,7 +109,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserByUserName(String username) {
-        System.out.println("full");
         return userRepository.findByUsernameFull(username);
 
     }
@@ -160,8 +158,6 @@ public class UserServiceImpl implements UserService {
     public void unbound(User user1, User user2) {
         user1.getFriends().remove(user2);
         user2.getFriends().remove(user1);
-
-        System.out.println(user1.getFriends().size());
 
         userRepository.save(user1);
         userRepository.save(user2);
@@ -246,7 +242,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void acceptFriendRequest(User from, User to) {
         friendRequestRepository.findByFromAndTo(from, to).ifPresent(request -> {
-            System.out.println("present");
             friendRequestRepository.delete(request);
             makeFriends(from, to);
 
@@ -324,9 +319,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void confirmRegistration(String uuid) {
-        System.out.println("confirmed"+uuid);
         registrationRepository.findById(UUID.fromString(uuid)).ifPresent(registration -> {
-            System.out.println("found");
             User user = new User();
             Wall wall = new Wall();
             user.setUsername(registration.getUsername());
@@ -340,31 +333,6 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
             registrationRepository.delete(registration);
         });
-    }
-
-    @Override
-    public void pingOnline(User user) {
-//        userLastActivityRepository.findByUser(user).ifPresent(currentActivity -> {
-//            currentActivity.setLastActivityTime(Instant.now());
-//
-//            userLastActivityRepository.save(currentActivity);
-//        });
-    }
-
-    @Override
-    public boolean isOnline(User user) {
-//        if (userLastActivityRepository.findByUser(user).isPresent()) {
-//            UserLastActivity lastActivity = userLastActivityRepository.findByUser(user).get();
-//            System.out.println(Duration.between(lastActivity.getLastActivityTime(), Instant.now()).abs().toMinutes());
-//            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-//                    .withZone(ZoneId.systemDefault());
-//
-//            System.out.println(DATE_TIME_FORMATTER.format(Instant.now()));
-//            System.out.println(DATE_TIME_FORMATTER.format(lastActivity.getLastActivityTime()));
-//
-//            return Duration.between(lastActivity.getLastActivityTime(), Instant.now()).abs().toMinutes() < 3;
-//        }
-        return false;
     }
 
     @Override
@@ -429,7 +397,6 @@ public class UserServiceImpl implements UserService {
         User from = userRepository.findByUsername(fromId);
         User to = userRepository.findByUsername(toId);
 
-        System.out.println(fromId + ' ' + toId);
         declineFriendRequest(from, to);
     }
 }

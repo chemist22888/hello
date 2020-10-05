@@ -53,12 +53,10 @@ public class AdditionalPropertiesAspect {
     public Object foo(ProceedingJoinPoint pjp) throws Throwable {
         me = userService.getMe();
         Object res = pjp.proceed();
-        System.out.println(res.getClass().getName());
         objectMapper = new ObjectMapper(objectMapper.
                 writerWithView(UserViewJson.UserFullDetails.class).getFactory());
 
         JsonNode jsonRes = objectMapper.readTree(objectMapper.writeValueAsString(res));
-        System.out.println(jsonRes);
         MethodSignature signature = (MethodSignature) pjp.getSignature();
         AdditionalProperties.Properties[] properties =
                 signature.getMethod().
@@ -68,7 +66,6 @@ public class AdditionalPropertiesAspect {
         for (int i = 0; i < properties.length; i++) {
             switch (properties[i]) {
                 case friendStatus: {
-                    System.out.println("fstatus begin");
                     jsonRes = ((ObjectNode)jsonRes).put("friendStatus",
                             userService.friendStatus(me.getId(), jsonRes.get("id").longValue()));
 
@@ -84,75 +81,9 @@ public class AdditionalPropertiesAspect {
                             userService.isOnline(new User(jsonRes.get("id").longValue())));
                     break;
                 }
-//                case likeStatus: {
-//                    if(res instanceof Post){
-//                        jsonRes = likeStatus((Post) res);
-//                    }
-//                    else if(res instanceof Collection){
-//                        ArrayNode arrayNode = objectMapper.createArrayNode();
-//                        ((Collection) res).forEach(post ->{
-//                            if (post instanceof Post) {
-//                                arrayNode.add(likeStatus((Post) post));
-//                            }
-//                        });
-//                        jsonRes = arrayNode;
-//                    }
-//                    else if (res instanceof User) {
-//                        try {
-//                            ArrayNode arrayNode = objectMapper.createArrayNode();
-//                            (jsonRes.get("wall").get("posts")).forEach(postNode ->{
-//                                try {
-//                                    Post post = objectMapper.treeToValue(postNode,Post.class);
-//
-//                                    postNode = ((ObjectNode)postNode).put("liked",postService.isLiked(post,me));
-//                                    arrayNode.add(postNode);
-//                                } catch (JsonProcessingException e) {
-//                                    e.printStackTrace();
-//                                }
-//                            });
-//                            ((ObjectNode) jsonRes.get("wall")).set("posts", arrayNode);
-//                        }catch (Exception e){e.printStackTrace();}
-//                    }
-//                }
             }
         }
         return jsonRes;
-    }
-
-    private JsonNode likeStatus(Post post) {
-        ObjectNode postNode = objectMapper.valueToTree(post);
-        postNode.put("liked",postService.isLiked(post,me));
-        return postNode;
-    }
-
-    private JsonNode friendStatus(JsonNode jsonNode, Long id) throws Throwable {
-
-
-//        ObjectNode jsonRes = (ObjectNode) objectMapper.readTree(objectMapper.writeValueAsString(res));
-
-        if (!jsonNode.isArray()) {
-            User other = objectMapper.treeToValue(jsonNode, User.class);
-
-            Set<User> friends = userService.findUserById(other.getId()).getFriends();
-
-//            jsonRes.putPOJO("friends",friends);
-
-            ((ObjectNode) jsonNode).put("friendStatus", userService.friendStatus(id, other.getId()));
-
-        } else {
-//            Iterator<User> users = ((ArrayList<User>) res).iterator();
-//            jsonRes.forEach((node) -> {
-//                User other = users.next();
-//                try {
-//                    other = jsonService.fromJson(node, User.class);
-//                } catch (Throwable throwable) {
-//                    throwable.printStackTrace();
-//                }
-//                ((ObjectNode) node).put("friendStatus",
-//                        userService.friendStatus(id, other.getId()));
-//            });
-        }
-        return jsonNode;
     }
 
 }

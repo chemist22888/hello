@@ -41,8 +41,6 @@ public interface UserService {
     void unlikePost(User user,Long postId);
     void applyRegistration(String username, String password, String email);
     void confirmRegistration(String uuid);
-    void pingOnline(User user);
-    boolean isOnline(User user);
     void deleteUser(User user);
     void deleteUserById(Long id);
     void deleteUserByUsername(String username);

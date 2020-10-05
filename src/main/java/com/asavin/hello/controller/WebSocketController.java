@@ -45,7 +45,6 @@ public class WebSocketController {
     @MessageMapping("/send/message/{chatId}")
     public Object chat(@Header("simpSessionId") String sessionId
 ,@DestinationVariable String chatId, @RequestBody Message message, Principal principal) throws Exception {
-        System.out.println(sessionId+"sesid");
         Chat chat = null;
         if(chatId.toCharArray()[0] == 'c'){
             try {

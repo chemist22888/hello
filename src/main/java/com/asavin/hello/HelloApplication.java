@@ -26,9 +26,6 @@ public class HelloApplication extends SpringBootServletInitializer  {
 	public static void main(String[] args) throws IOException {
 		SpringApplication.run(HelloApplication.class, args);
 
-//		String a = "{\"text\":\"d\",\"images\":[3]}";
-//		System.out.println(		new ObjectMapper().readValue(a,Post.class).getImages().get(0).getId());
-//		new ObjectMapper().readValue(a,Post.class).getImages().get(0).getId();
 	}
 
 }

@@ -6,12 +6,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 class MyClassWithEventListeners {
     @Autowired
     PasswordEncoder passwordEncoder;
     @EventListener({ContextRefreshedEvent.class})
     void contextRefreshedEvent() {
-        System.out.println(passwordEncoder.encode("password"));
     }
 }

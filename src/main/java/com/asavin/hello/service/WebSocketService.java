@@ -28,7 +28,6 @@ public class WebSocketService {
     ChatService chatService;
     public void sendMessage(Long idFrom, Chat chat, Message message) {
         chat.getUsers().forEach(user -> {
-            System.out.println(user.getUsername());
             try {
                 this.messagingTemplate.convertAndSendToUser(user.getUsername(),"/queue/chat",
                         objectMapper.writerWithView(UserViewJson.UserInChatDetails.class).writeValueAsString(message));
@@ -38,8 +37,6 @@ public class WebSocketService {
         });
     }
     public void sendFriendStatus(String userToUsername,User user ,int status) throws IOException {
-        System.out.println("ws"+userToUsername);
-
         StringWriter sw = new StringWriter();
         objectMapper.writerWithView(UserViewJson.UserInChatDetails.class).writeValue(sw, user);
 
@@ -48,8 +45,6 @@ public class WebSocketService {
         JsonNode response = objectMapper.createObjectNode()
         .put("friendStatus",status)
         .set("user",jsonNode);
-
-        System.out.println(response);
 
         this.messagingTemplate.convertAndSendToUser(userToUsername,"/queue/friend",response);
     }

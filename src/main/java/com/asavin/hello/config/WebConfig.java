@@ -40,8 +40,6 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
     @Bean
     public  JavaMailSender getJavaMailSender() {
-        System.out.println(host);
-        System.out.println(username);
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(host);
         mailSender.setPort(port);

@@ -89,10 +89,7 @@ public class UserController {
     @PostMapping("/write")
     @JsonView(UserViewJson.UserInChatDetails.class)
     public Post write(@RequestBody Post post) {
-        if(post.getImages()!=null)
-            post.getImages().forEach(image -> System.out.println(image.getId()+" "+image.getName()));
         Post post1 = userService.writePost(post);
-        System.out.println(post1.getText());
         return post1;
     }
     @CrossOrigin(origins = "http://localhost:4200")
@@ -116,17 +113,11 @@ public class UserController {
         return comentRepository.findByUser(userService.getMe());
     }
 
-    @PostMapping("/wtf")
-    @CrossOrigin(origins = "http://localhost:4200")
-    public void wtf() {
-        System.out.println(userService.getMe().getUsername());
-    }
 
     @PostMapping("/bond")
     @JsonView(UserViewJson.UserInChatDetails.class)
     public User makeFriends(String id) throws Throwable {
         User newFriend = userService.findUserByUserNameOrId(id);
-        System.out.println(objectMapper.writeValueAsString(getMe()));
 
         userService.makeFriends(userService.getMe(), newFriend);
         return newFriend;

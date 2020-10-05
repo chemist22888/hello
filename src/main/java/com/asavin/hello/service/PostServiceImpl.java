@@ -113,8 +113,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public Image saveImage(byte[] fileBytes, String type) {
         if(!type.equals("jpg") && !type.equals("png")){
-            System.out.println("err "+type);
-            return null;}
+            return null;
+        }
         Image image = imageRepository.save(new Image());
         image.setName(image.getId() + "." + type);
         image = imageRepository.save(image);
