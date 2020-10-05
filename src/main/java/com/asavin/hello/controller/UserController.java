@@ -5,17 +5,24 @@ import com.asavin.hello.annotation.AdditionalProperties;
 import com.asavin.hello.json.UserViewJson;
 import com.asavin.hello.repository.*;
 import com.asavin.hello.service.JsonService;
+import com.asavin.hello.service.PostService;
 import com.asavin.hello.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.imageio.ImageIO;
 
 import static com.asavin.hello.annotation.AdditionalProperties.Properties;
 
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -38,8 +45,8 @@ public class UserController {
     ComentRepository comentRepository;
     @Autowired
     ImageRepository imageRepository;
-    //    @Autowired
-//    WebSocketService webSocketService;
+    @Autowired
+    PostService postService;
     @GetMapping("/users")
     @JsonView(UserViewJson.UserFullDetails.class)
     public List<User> getAllUsers() {
@@ -51,25 +58,39 @@ public class UserController {
     @AdditionalProperties(properties = Properties.friendStatus)
     public Object getUser(@PathVariable String id) {
         User user = userService.findUserByUserNameOrId(id);
-        for(Post p:user.getWall().getPosts()){
-            System.out.println(p.getId()+" "+p.getComents().size());
-        }
+
         return user;
     }
 
     @GetMapping("/me")
     @JsonView(UserViewJson.UserFullDetails.class)
-    @AdditionalProperties(properties = {Properties.friendStatus,Properties.onlineStatus})
-//    @FriendStatus(fields = {})
+    @AdditionalProperties(properties = {Properties.friendStatus})
     public Object getMe() {
-//        imageRepository.save(new Image());
         return (userService.getMe());
+    }
+    @GetMapping("/status")
+    public Object status(@RequestParam Long userId) {
+        return userService.friendStatus(userService.getMe().getId(),userId);
+    }
+    @GetMapping("/meShort")
+    @JsonView(UserViewJson.UserInChatDetails.class)
+    public Object getMeShort() {
+        return userService.getMe();
+    }
+    @GetMapping("/username")
+    public String username(){
+        return userService.getUsername();
+    }
+    @GetMapping("/myId")
+    public Long id(){
+        return userService.getId();
     }
 
     @PostMapping("/write")
     @JsonView(UserViewJson.UserInChatDetails.class)
     public Post write(@RequestBody Post post) {
-        post.getImages().forEach(image -> System.out.println(image.getId()+" "+image.getName()));
+        if(post.getImages()!=null)
+            post.getImages().forEach(image -> System.out.println(image.getId()+" "+image.getName()));
         Post post1 = userService.writePost(post);
         System.out.println(post1.getText());
         return post1;
@@ -88,9 +109,7 @@ public class UserController {
         res.addAll(userService.getMe().getFriends());
         return (res);
     }
-
     @JsonView(UserViewJson.UserInChatDetails.class)
-
     @PostMapping("/myComments")
     @CrossOrigin(origins = "http://localhost:4200")
     public List<Coment> getMyComments() {
@@ -161,7 +180,20 @@ public class UserController {
     }
 
     @PostMapping("/loadAvatar")
-    public void loadAvatar(@RequestParam Long image){
-        this.userService.setAvatar(userService.getMe(),new Image(image));
+    public Long loadAvatar(@RequestBody String recievedFile) {
+        String type = recievedFile.substring(11,14);
+        recievedFile = recievedFile.substring(recievedFile.indexOf(",") + 1);
+        return userService.loadAvatar(recievedFile,type,userService.getMe());
+
+    }
+    @JsonView(UserViewJson.UserInChatDetails.class)
+    @GetMapping("/requestsFrom")
+    public Set<User> getDirectedRequestFrom(){
+        return userService.getDirectedRequestFrom(userService.getMe());
+    }
+    @JsonView(UserViewJson.UserInChatDetails.class)
+    @GetMapping("/requestsTo")
+    public Set<User> getDirectedRequestTo(){
+        return userService.getDirectedRequestTo(userService.getMe());
     }
 }

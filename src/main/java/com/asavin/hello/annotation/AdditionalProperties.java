@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 public @interface AdditionalProperties {
     enum Properties{
         friendStatus,
-        onlineStatus;
-
+        onlineStatus,
+        likeStatus,
     }
     Properties[]properties();
 

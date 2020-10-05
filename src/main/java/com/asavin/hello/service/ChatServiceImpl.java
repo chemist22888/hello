@@ -30,15 +30,15 @@ public class ChatServiceImpl implements ChatService{
         Chat dialog = chatRepository.findDilog(getMe(),user);
         if(dialog == null){
             dialog = new Chat();
-            dialog.setUsers(Arrays.asList(getMe(), user));
-            dialog.setMessages(new ArrayList());
+            dialog.setUsers(Set.of(getMe(), user));
+            dialog.setMessages(new HashSet<>());
             dialog = chatRepository.save(dialog);
         }
         return dialog;
     }
 
     @Override
-    public Chat createChat(List<User> users) {
+    public Chat createChat(Set<User> users) {
         Chat chat = new Chat();
         chat.setUsers(users);
         chat = chatRepository.save(chat);
@@ -49,7 +49,7 @@ public class ChatServiceImpl implements ChatService{
     public Message send(String text, Long chatId) {
         Message message = new Message();
         message.setText(text);
-        message.setChat(chatRepository.findById(chatId).get());
+        message.setChat(new Chat(chatId));
         message.setUser(getMe());
         return messageRepository.save(message);
     }
@@ -67,6 +67,7 @@ public class ChatServiceImpl implements ChatService{
 
     private User getMe(){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
         return userRepository.findByUsername(username);
     }
 }

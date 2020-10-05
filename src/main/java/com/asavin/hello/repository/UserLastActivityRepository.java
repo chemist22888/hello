@@ -8,7 +8,4 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface UserLastActivityRepository  extends JpaRepository<UserLastActivity,Long> {
-    @Query("select activity from UserLastActivity activity where activity.user=:user")
-    Optional<UserLastActivity> findByUser(@Param("user")User user);
-}
+public interface UserLastActivityRepository {}

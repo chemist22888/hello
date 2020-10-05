@@ -37,16 +37,6 @@ public class WebSocketService {
             }
         });
     }
-    public void sendFriendStatus(String userToUsername,Long id ,int status) throws JsonProcessingException {
-        System.out.println("ws"+userToUsername);
-        User user = userRepository.findById(id).get();
-
-        String response = objectMapper.createObjectNode()
-        .put("friendStatus",status)
-        .put("user",objectMapper.writerWithView(UserViewJson.UserInChatDetails.class).writeValueAsString(user)).toString();
-        this.messagingTemplate.convertAndSendToUser(userToUsername,"/queue/friend",response);
-
-    }
     public void sendFriendStatus(String userToUsername,User user ,int status) throws IOException {
         System.out.println("ws"+userToUsername);
 
@@ -62,12 +52,5 @@ public class WebSocketService {
         System.out.println(response);
 
         this.messagingTemplate.convertAndSendToUser(userToUsername,"/queue/friend",response);
-    }
-    public void sendFriendStatus(String userToUsername,String username  ,int status){
-        String response = objectMapper.createObjectNode()
-                .put("friendStatus",status)
-                .put("username",username).toString();
-
-        this.messagingTemplate.convertAndSendToUser(userToUsername,"user/friend",response);
     }
 }

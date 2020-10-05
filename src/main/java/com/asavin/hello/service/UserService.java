@@ -6,9 +6,12 @@ import com.asavin.hello.entity.Post;
 import com.asavin.hello.entity.User;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface UserService {
+    String getUsername();
+    Long getId();
     List<User> getAllUsers();
     List<User> getUserWhereIdLessLimit(Long id,int quantity);
     List<User> getUserWhereIdLess(Long id);
@@ -35,6 +38,7 @@ public interface UserService {
     void writeComment(User user,Post post,String text);
     List<Coment>getUsersComents(User user);
     void likePost(User user,Long postId);
+    void unlikePost(User user,Long postId);
     void applyRegistration(String username, String password, String email);
     void confirmRegistration(String uuid);
     void pingOnline(User user);
@@ -42,5 +46,8 @@ public interface UserService {
     void deleteUser(User user);
     void deleteUserById(Long id);
     void deleteUserByUsername(String username);
+    Long loadAvatar(String bytesEncoded,String type,User user);
     void setAvatar(User user, Image image);
+    Set<User> getDirectedRequestFrom(User from);
+    Set<User> getDirectedRequestTo(User to);
 }

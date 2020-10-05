@@ -3,7 +3,7 @@ package com.asavin.hello.entity;
 import javax.persistence.*;
 import java.time.Instant;
 
-@Entity
+//@Entity/
 public class UserLastActivity {
     @Id
     @GeneratedValue

@@ -37,6 +37,7 @@ public class Coment {
     }
     @ManyToOne
     @JoinColumn(name = "user_id",referencedColumnName = "id")
+    @JsonIgnoreProperties({"friends","wall"})
     public User getUser() {
         return user;
     }

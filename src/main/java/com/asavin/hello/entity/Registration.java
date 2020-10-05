@@ -1,6 +1,7 @@
 package com.asavin.hello.entity;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.hibernate.id.UUIDGenerationStrategy;
 
 import javax.persistence.Column;
@@ -27,6 +28,7 @@ public class Registration {
             name = "UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
+    @org.hibernate.annotations.Type(type="org.hibernate.type.UUIDBinaryType")
     public UUID getUuid() {
         return uuid;
     }

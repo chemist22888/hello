@@ -3,24 +3,29 @@ package com.asavin.hello.service;
 import com.asavin.hello.entity.*;
 import com.asavin.hello.repository.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
 import javax.persistence.EntityManager;
 import javax.xml.stream.events.Comment;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.sql.SQLSyntaxErrorException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -46,8 +51,23 @@ public class UserServiceImpl implements UserService {
     PasswordEncoder passwordEncoder;
     @Autowired
     EmailService emailService;
+//    @Autowired
+//    UserLastActivityRepository userLastActivityRepository;
+    @Value("${imagesPath}")
+    String imagesPath;
     @Autowired
-    UserLastActivityRepository userLastActivityRepository;
+    PostService postService;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+    @Override
+    public String getUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    @Override
+    public Long getId() {
+        return userRepository.findIdByUsername(getUsername());
+    }
 
     @Override
     public List<User> getAllUsers() {
@@ -79,8 +99,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getMe() {
         System.out.println("service thread " + Thread.currentThread().getId());
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username);
+        String username = getUsername();
+        return userRepository.findByUsernameFull(username);
     }
 
     @Override
@@ -90,7 +110,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserByUserName(String username) {
-        return userRepository.findByUsername(username);
+        System.out.println("full");
+        return userRepository.findByUsernameFull(username);
+
     }
 
     @Override
@@ -107,7 +129,8 @@ public class UserServiceImpl implements UserService {
         User me = getMe();
 
         post.setWall(me.getWall());
-        post.setLikes(new ArrayList<>());
+        post.setLikes(new HashSet<>());
+        post.setUser(me);
 
         return postRepositpry.save(post);
     }
@@ -158,16 +181,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int friendStatus(Long user1Id, Long user2Id) {
-        User user1 = findUserById(user1Id);
-        User user2 = findUserById(user2Id);
+//        User user1 = findUserById(user1Id);
+//        User user2 = findUserById(user2Id);
 
-        System.out.println("ids are" + user1.getFriends() + " " + user2.getFriends());
+        int quantity = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM friends WHERE (user_id=? AND friend_id=?) OR  (user_id=? AND friend_id=?)",
+                new Long[]{user1Id,user2Id,user2Id,user1Id}
+                ,Integer.class);
 
-        int status = (user1.getFriends().contains(user2)
-                && user2.getFriends().contains(user1)) ? 2 : 0;
-        if (friendRequestRepository.findByFromAndTo(user1, user2).isPresent())
+        int status = quantity>0 ? 2 : 0;
+        if (friendRequestRepository.findByFromAndTo(new User(user1Id), new User(user2Id)).isPresent())
             status = 1;
-        else if (friendRequestRepository.findByFromAndTo(user2, user1).isPresent())
+        else if (friendRequestRepository.findByFromAndTo(new User(user2Id), new User(user1Id)).isPresent())
             status = -1;
 
 
@@ -176,16 +201,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<Post> getNewsOfUsersFriend(User user) {
-        return postRepositpry.orderPostsByTime(wallRepository.getPostByWalls(userRepository.newPosts(
-                userRepository.getUsersIds(user.getFriends()))
-        ));
+        List<Post> posts = new ArrayList<>();
+        try{
+            posts = postRepositpry.orderPostsByTime(wallRepository.getPostByWalls(userRepository.newPosts(
+                    userRepository.getUsersIds(user.getFriends()))));
+        }catch (Exception e){e.printStackTrace();}
+        return posts;
     }
 
     @Override
     public void applyFriendRequest(String fromId, String toId) {
         User from = userRepository.findByUsername(fromId);
         User to = userRepository.findByUsername(toId);
-        ;
 
         applyFriendRequest(from, to);
     }
@@ -276,6 +303,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void unlikePost(User user, Long postId) {
+        Optional<Like> likeOptional = likeRepositpry.findByUserAndPost(user,new Post(postId));
+        likeOptional.ifPresent(like ->{
+            likeRepositpry.delete(like);
+        });
+    }
+
+    @Override
     public void applyRegistration(String username, String password, String email) {
         password = passwordEncoder.encode(password);
         Registration registration = new Registration(email, username, password);
@@ -309,26 +344,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void pingOnline(User user) {
-        userLastActivityRepository.findByUser(user).ifPresent(currentActivity -> {
-            currentActivity.setLastActivityTime(Instant.now());
-
-            userLastActivityRepository.save(currentActivity);
-        });
+//        userLastActivityRepository.findByUser(user).ifPresent(currentActivity -> {
+//            currentActivity.setLastActivityTime(Instant.now());
+//
+//            userLastActivityRepository.save(currentActivity);
+//        });
     }
 
     @Override
     public boolean isOnline(User user) {
-        if (userLastActivityRepository.findByUser(user).isPresent()) {
-            UserLastActivity lastActivity = userLastActivityRepository.findByUser(user).get();
-            System.out.println(Duration.between(lastActivity.getLastActivityTime(), Instant.now()).abs().toMinutes());
-            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(ZoneId.systemDefault());
-
-            System.out.println(DATE_TIME_FORMATTER.format(Instant.now()));
-            System.out.println(DATE_TIME_FORMATTER.format(lastActivity.getLastActivityTime()));
-
-            return Duration.between(lastActivity.getLastActivityTime(), Instant.now()).abs().toMinutes() < 3;
-        }
+//        if (userLastActivityRepository.findByUser(user).isPresent()) {
+//            UserLastActivity lastActivity = userLastActivityRepository.findByUser(user).get();
+//            System.out.println(Duration.between(lastActivity.getLastActivityTime(), Instant.now()).abs().toMinutes());
+//            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+//                    .withZone(ZoneId.systemDefault());
+//
+//            System.out.println(DATE_TIME_FORMATTER.format(Instant.now()));
+//            System.out.println(DATE_TIME_FORMATTER.format(lastActivity.getLastActivityTime()));
+//
+//            return Duration.between(lastActivity.getLastActivityTime(), Instant.now()).abs().toMinutes() < 3;
+//        }
         return false;
     }
 
@@ -348,9 +383,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Long loadAvatar(String bytesEncoded, String type,User user) {
+        try {
+            byte[] decodedString = Base64.decodeBase64(bytesEncoded.getBytes());
+            BufferedImage squaredAvatar= postService.squareImare(decodedString);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(squaredAvatar, type, baos);
+            byte[] bytes = baos.toByteArray();
+
+            Image image = postService.saveImage(bytes,type);
+            setAvatar(user,image);
+            return image.getId();
+        }catch (Exception e){
+            e.printStackTrace();
+            return -1l;
+        }
+    }
+
+    @Override
     public void setAvatar(User user, Image image) {
         user.setAvatar(image);
         userRepository.save(user);
+    }
+
+    @Override
+    public Set<User> getDirectedRequestFrom(User from) {
+        return friendRequestRepository.findDirectsFrom(from);
+    }
+
+    @Override
+    public Set<User> getDirectedRequestTo(User to) {
+        return friendRequestRepository.findDirectsTo(to);
     }
 
     @Override
@@ -368,7 +431,5 @@ public class UserServiceImpl implements UserService {
 
         System.out.println(fromId + ' ' + toId);
         declineFriendRequest(from, to);
-
     }
-//    private User getUserB
 }

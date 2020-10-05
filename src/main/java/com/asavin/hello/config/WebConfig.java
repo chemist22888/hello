@@ -27,15 +27,15 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 public class WebConfig extends WebMvcConfigurerAdapter {
-@Value("${mail.host}")
+@Value("${spring.mail.host}")
     private String host;
-    @Value("${mail.port}")
+    @Value("${spring.mail.port}")
     private Integer port;
-    @Value("${mail.username}")
+    @Value("${spring.mail.username}")
     private String username;
-    @Value("${mail.password}")
+    @Value("${spring.mail.password}")
     private String password;
-    @Value("${mail.smtp.ssl.trust}")
+    @Value("${spring.mail.smtp.ssl.trust}")
     private String trust;
 
     @Bean
@@ -65,6 +65,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE").allowedOrigins("http://localhost:4200")
                 .allowedHeaders("*");
     }
+    @Bean
     public MappingJackson2HttpMessageConverter jacksonMessageConverter(){
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
 

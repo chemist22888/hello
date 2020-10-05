@@ -1,12 +1,7 @@
 package com.asavin.hello.entity;
 
-import com.asavin.hello.json.ChatViewJson;
-import com.asavin.hello.json.MessageViewJson;
 import com.asavin.hello.json.UserViewJson;
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,8 +16,29 @@ import java.util.Set;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
+@NamedEntityGraph(name = "graph.Full",attributeNodes = {
+        @NamedAttributeNode(value = "avatar"),
+        @NamedAttributeNode(value = "posts",subgraph = "postsubs"),
+        @NamedAttributeNode(value = "friends"),
+    },subgraphs = {
+        @NamedSubgraph(name = "postsubs",attributeNodes =
+                {@NamedAttributeNode(value = "likes"),
+                 @NamedAttributeNode(value = "coments"),
+                 @NamedAttributeNode(value = "likers"),
+                 @NamedAttributeNode(value = "images"),
+                        })})
 public class User implements UserDetails {
+    @OneToMany(mappedBy = "user")
+    @JsonView({UserViewJson.UserFullDetails.class})
+    public Set<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(Set<Post> getPosts) {
+        this.posts = getPosts;
+    }
+
+    Set<Post> posts;
     @Column
     public String getRole() {
         return role;
@@ -36,7 +52,8 @@ public class User implements UserDetails {
     public User(Long id) {
         this.id = id;
     }
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "avatar",referencedColumnName = "id")
     public Image getAvatar() {
         return avatar;
     }
@@ -45,9 +62,15 @@ public class User implements UserDetails {
         this.avatar = avatar;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "avatar",referencedColumnName = "id")
+
     private Image avatar;
+    @ManyToMany
+    @JoinTable(
+            name = "friends",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "friend_id")})
+    @JsonView(UserViewJson.UserFullDetails.class)
+    @JsonIgnoreProperties({"friends", "wall"})
 
     public Set<User> getFriends() {
         return friends;
@@ -56,12 +79,7 @@ public class User implements UserDetails {
     public void setFriends(Set<User> friends) {
         this.friends = friends;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonView({UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
     private Long id;
-
 
     public User() {
     }
@@ -70,39 +88,27 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    @Column
-    @JsonView({UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
     private String username;
-    @Column
-    @JsonIgnore
+
     private String password;
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "USER_CHAT",
-            joinColumns = {@JoinColumn(name = "user_id")},
-            inverseJoinColumns = {@JoinColumn(name = "chat_id")}
-    )
-    @OrderBy(value = "id asc")
-    @JsonIgnore
+
     private List<Chat> chats;
 
-    @OneToOne
-    @JoinColumn(name = "wall_id")
-    @JsonView({UserViewJson.UserFullDetails.class})
     private Wall wall;
     private String email;
-
-    @JsonIgnore
-    public UserLastActivity getLastActivity() {
-        return lastActivity;
-    }
-
-    public void setLastActivity(UserLastActivity lastActivity) {
-        this.lastActivity = lastActivity;
-    }
-
-    @OneToOne(mappedBy = "user")
-    private UserLastActivity lastActivity;
+//
+//    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY)
+//    @JsonIgnore
+//    public UserLastActivity getLastActivity() {
+//        return lastActivity;
+//    }
+//
+//    public void setLastActivity(UserLastActivity lastActivity) {
+//        this.lastActivity = lastActivity;
+//    }
+//
+//
+//    private UserLastActivity lastActivity;
 
     public String getEmail() {
         return email;
@@ -111,17 +117,12 @@ public class User implements UserDetails {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "friends",
-            joinColumns = {@JoinColumn(name = "user_id")},
-            inverseJoinColumns = {@JoinColumn(name = "friend_id")}
-    )
-    @JsonView(UserViewJson.UserFullDetails.class)
-    @JsonIgnoreProperties({"friends", "wall"})
     private Set<User> friends;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wall_id")
+    @JsonIgnore
+    @JsonView({UserViewJson.UserFullDetails.class})
     public Wall getWall() {
         return wall;
     }
@@ -130,6 +131,14 @@ public class User implements UserDetails {
         this.wall = wall;
     }
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "USER_CHAT",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "chat_id")}
+    )
+    @OrderBy(value = "id asc")
+    @JsonIgnore
     public List<Chat> getChats() {
         return chats;
     }
@@ -137,6 +146,10 @@ public class User implements UserDetails {
     public void setChats(List<Chat> chats) {
         this.chats = chats;
     }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonView({UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
     public Long getId() {
         return id;
     }
@@ -145,30 +158,35 @@ public class User implements UserDetails {
         this.id = id;
     }
 
+    @Column
+    @JsonView({UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
     public String getUsername() {
         return username;
     }
 
     @Override
     @JsonIgnore
+    @Transient
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
     @JsonIgnore
-
+    @Transient
     public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
     @JsonIgnore
+    @Transient
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
+    @Transient
     @JsonIgnore
     public boolean isEnabled() {
         return true;
@@ -180,10 +198,12 @@ public class User implements UserDetails {
 
     @Override
     @JsonIgnore
+    @Transient
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return AuthorityUtils.createAuthorityList(role);
     }
-
+    @Column
+    @JsonIgnore
     public String getPassword() {
         return password;
     }

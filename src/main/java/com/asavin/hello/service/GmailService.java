@@ -14,7 +14,7 @@ import java.net.SocketException;
 public class GmailService implements EmailService {
     @Autowired
     JavaMailSender mailSender;
-    @Value("${mail.username}")
+    @Value("${spring.mail.username}")
     String from;
     @Override
     public void send(String subject, String text, String adress) {

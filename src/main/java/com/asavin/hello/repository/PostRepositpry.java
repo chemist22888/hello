@@ -1,8 +1,6 @@
 package com.asavin.hello.repository;
 
-import com.asavin.hello.entity.Image;
-import com.asavin.hello.entity.Post;
-import com.asavin.hello.entity.Wall;
+import com.asavin.hello.entity.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PostRepositpry extends JpaRepository<Post,Long> {
@@ -31,14 +30,6 @@ public interface PostRepositpry extends JpaRepository<Post,Long> {
     @Query("select p from Post p order by p.id desc ")
     List<Post> findAllDesc(Pageable pageable);
 
-    //    default List<Post> getUserWhereIdLessLimit(Long id,int quantity) {
-//        if(id!=-1 && quantity!=-1)
-//            return getPostWhereIdLess(id, PageRequest.of(0,quantity));
-//        else if(id!=-1 && quantity == -1)
-//            return getPostWhereIdLess(id);
-//        else if(id==-1 && quantity != -1)
-//            return findAll(PageRequest.of(0,quantity)).getContent();
-//        else
-//            return findAll();
-//    }
+    @Query("select p from Post p where :user in elements(p.likers) and p=:post")
+    Optional<Post> findByLiker(@Param("post") Post post, @Param("user")User user);
 }

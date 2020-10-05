@@ -1,36 +1,50 @@
 package com.asavin.hello.entity;
 
-import com.asavin.hello.json.EntityIdResolver;
 import com.asavin.hello.json.UserViewJson;
 import com.fasterxml.jackson.annotation.*;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @JsonView({UserViewJson.UserFullDetails.class})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
 public class Post {
     private Long id;
     private String text;
-    private List<Coment> coments;
-    private List<Like> likes;
-    private List<User> likers;
+    private Set<Coment> coments;
+    private Set<Like> likes;
+    private Set<User> likers;
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+//    @JsonIgnore
+    @JsonIgnoreProperties({"wall","friends","posts"})
+    public User getUser() {
+
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     @ManyToMany
     @JoinTable(name = "likes",
             joinColumns = { @JoinColumn(name = "post_id") },
             inverseJoinColumns = { @JoinColumn(name = "user_id") })
-    @JsonIgnoreProperties({"friends","wall"})
-    public List<User> getLikers() {
+    @JsonIgnoreProperties({"friends","wall","posts"})
+    @ElementCollection
+    public Set<User> getLikers() {
         return likers;
     }
 
-    public void setLikers(List<User> likers) {
+    public void setLikers(Set<User> likers) {
         this.likers = likers;
     }
 
@@ -42,15 +56,15 @@ public class Post {
 
     @OneToMany(mappedBy = "post")
     @JsonIgnoreProperties({"friends","wall"})
-    public List<Like> getLikes() {
+    public Set<Like> getLikes() {
         return likes;
     }
 
-    public void setLikes(List<Like> likes) {
+    public void setLikes(Set<Like> likes) {
         this.likes = likes;
     }
 
-    List<Image> images;//TODO read about cascades
+    Set<Image> images;//TODO read about cascades
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
             name = "post_image",
@@ -60,11 +74,11 @@ public class Post {
     @Column//TODO jsonviews!!!!
     @JsonIdentityReference(alwaysAsId=true)
     @JsonView({UserViewJson.UserInChatDetails.class,UserViewJson.UserFullDetails.class})
-    public List<Image> getImages() {
+    public Set<Image> getImages() {
         return images;
     }
 
-    public void setImages(List<Image> images) {
+    public void setImages(Set<Image> images) {
         this.images = images;
     }
 
@@ -72,13 +86,14 @@ public class Post {
     }
     @OneToMany(mappedBy = "post")
     @JsonView({UserViewJson.UserFullDetails.class})
-    public List<Coment> getComents() {
+    public Set<Coment> getComents() {
         return coments;
     }
 
-    public void setComents(List<Coment> coments) {
+    public void setComents(Set<Coment> coments) {
         this.coments = coments;
     }
+    @CreatedDate
     @JsonView({UserViewJson.UserInChatDetails.class,UserViewJson.UserFullDetails.class})
     public Instant getCreationDate() {
         return creationDate;
@@ -90,13 +105,14 @@ public class Post {
 
 
     private Instant creationDate;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "WALL_ID",referencedColumnName = "id")
     @JsonView({UserViewJson.UserInChatDetails.class,UserViewJson.UserFullDetails.class})
     @JsonIgnoreProperties({"posts"})
     @JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
     @JsonIdentityReference(alwaysAsId=true)
     @JsonProperty("wallId")
+    @JsonIgnore
     public Wall getWall() {
         return wall;
     }

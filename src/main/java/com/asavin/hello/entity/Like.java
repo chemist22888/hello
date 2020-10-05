@@ -27,16 +27,14 @@ public class Like {
     public void setId(long id) {
         this.id = id;
     }
-
     @ManyToOne
-    @JsonIgnoreProperties({"friends","wall"})
+    @JsonIgnoreProperties({"friends","wall","posts"})
     @JoinColumn(name = "user_id",referencedColumnName = "id")
     public User getUser() {
         return user;
     }
 
-    public Like() {
-    }
+    public Like() {}
 
     public void setUser(User user) {
         this.user = user;
@@ -45,6 +43,7 @@ public class Like {
     @JoinColumn(name = "post_id",referencedColumnName = "id")
     @JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
     @JsonIdentityReference(alwaysAsId=true)
+    @JsonIgnoreProperties({"likes","comments","likers"})
     @JsonProperty("postId")
     public Post getPost() {
         return post;

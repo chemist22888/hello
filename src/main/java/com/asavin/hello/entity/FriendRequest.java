@@ -1,8 +1,11 @@
 package com.asavin.hello.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.*;
 
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames={"from_user_id", "to_user_id"})})
 public class FriendRequest {
     public static final int APPLY_FRIEND_REQUEST = 1;
     public static final int CANCEL_FRIEND_REQUEST = -1;
@@ -34,6 +37,7 @@ public class FriendRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "from_user_id",referencedColumnName = "id")
+    @JsonIgnoreProperties({"friends","wall"})
     public User getFrom() {
         return from;
     }
@@ -41,7 +45,7 @@ public class FriendRequest {
     public void setFrom(User from) {
         this.from = from;
     }
-
+    @JsonIgnoreProperties({"friends","wall"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "to_user_id",referencedColumnName = "id")
     public User getTo() {

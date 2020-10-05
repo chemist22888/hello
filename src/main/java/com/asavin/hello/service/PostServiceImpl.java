@@ -7,10 +7,17 @@ import com.asavin.hello.entity.User;
 import com.asavin.hello.repository.ComentRepository;
 import com.asavin.hello.repository.ImageRepository;
 import com.asavin.hello.repository.PostRepositpry;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.List;
 
 @Service
@@ -23,6 +30,10 @@ public class PostServiceImpl implements PostService {
     ImageRepository imageRepository;
     @Autowired
     WebSocketService webSocketService;
+    @Value("${imagesPath}")
+    String imagesPath;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
     @Override
     public void deletePost(Long id) {
         postRepositpry.deleteById(id);
@@ -86,7 +97,8 @@ public class PostServiceImpl implements PostService {
         else if (id == -1l && quantity != -1)
             return imageRepository.findAllDesc(PageRequest.of(0, quantity));
         else
-            return imageRepository.findAllDesc();    }
+            return imageRepository.findAllDesc();
+    }
 
     @Override
     public Coment writeComent(User user, String text, Post post) {
@@ -96,5 +108,53 @@ public class PostServiceImpl implements PostService {
         coment.setText(text);
 
         return comentRepository.saveAndFlush(coment);
+    }
+
+    @Override
+    public Image saveImage(byte[] fileBytes, String type) {
+        if(!type.equals("jpg") && !type.equals("png")){
+            System.out.println("err "+type);
+            return null;}
+        Image image = imageRepository.save(new Image());
+        image.setName(image.getId() + "." + type);
+        image = imageRepository.save(image);
+        File file = new File(imagesPath + "/" + image.getName());
+        file.getParentFile().mkdirs();
+        try  {
+            file.createNewFile();
+            OutputStream os = new FileOutputStream(file);
+            os.write(fileBytes);
+            return image;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public BufferedImage squareImare(byte[] bytes) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        try {
+            BufferedImage image = ImageIO.read(bais);
+            int wight = image.getWidth();
+            int heigth = image.getHeight();
+            if(wight == heigth)
+                return image;
+
+            int minDim = Math.min(wight,heigth);
+            int maxDim = Math.max(wight,heigth);
+            return image.getSubimage((maxDim-minDim)/2,0,minDim,minDim);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isLiked(Post post, User user) {
+        String sql = "SELECT COUNT(*) FROM likes where post_id=? and user_id=?";
+
+        int count = jdbcTemplate.queryForObject(sql,new Object[]{post.getId(),user.getId()},Integer.class);
+        return count!=0;
     }
 }

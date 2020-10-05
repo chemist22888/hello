@@ -2,18 +2,17 @@ package com.asavin.hello.entity;
 
 
 import com.asavin.hello.json.UserViewJson;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @JsonView({UserViewJson.UserFullDetails.class})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Wall {
     @Id
@@ -22,7 +21,7 @@ public class Wall {
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "wall")
     @OrderBy("id asc")
     @JsonView({UserViewJson.UserFullDetails.class})
-    private List<Post>posts;
+    private Set<Post> posts;
 
     @OneToOne(mappedBy = "wall", cascade = CascadeType.ALL,
             fetch = FetchType.LAZY, optional = false)
@@ -31,7 +30,7 @@ public class Wall {
 
     @ManyToMany
 
-    public List<Post> getPosts() {
+    public Set<Post> getPosts() {
         return posts;
     }
 
@@ -43,7 +42,7 @@ public class Wall {
         this.id = id;
     }
 
-    public void setPosts(List<Post> posts) {
+    public void setPosts(Set<Post> posts) {
         this.posts = posts;
     }
 }

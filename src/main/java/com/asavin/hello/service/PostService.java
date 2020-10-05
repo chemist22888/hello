@@ -5,6 +5,8 @@ import com.asavin.hello.entity.Image;
 import com.asavin.hello.entity.Post;
 import com.asavin.hello.entity.User;
 
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.util.List;
 
 public interface PostService {
@@ -18,4 +20,7 @@ public interface PostService {
     List<Coment> getComentWhereIdLessLimit(Long id, int quantity);
     List<Image> getImageWhereIdLessLimit(Long id, int quantity);
     Coment writeComent(User user,String text,Post post);
+    Image saveImage(byte [] file,String type);
+    BufferedImage squareImare(byte[] bytes);
+    boolean isLiked(Post post,User user);
 }

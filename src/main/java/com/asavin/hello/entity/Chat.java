@@ -1,6 +1,4 @@
 package com.asavin.hello.entity;
-
-
 import com.asavin.hello.json.ChatViewJson;
 import com.asavin.hello.json.MessageViewJson;
 import com.asavin.hello.json.UserViewJson;
@@ -10,6 +8,7 @@ import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -20,7 +19,7 @@ public class Chat {
     }
 
     private long id;
-    private List<User> users;
+    private Set<User> users;
 
     @Column
     public String getName() {
@@ -32,35 +31,34 @@ public class Chat {
     }
 
     private String name;
-
-    @ManyToMany
-    @Fetch(FetchMode.JOIN)
+    @JsonIgnoreProperties({"friends","wall"})
+    @ManyToMany(fetch = FetchType.EAGER)
+//    @Fetch(FetchMode.JOIN)
     @JoinTable(
             name = "USER_CHAT",
             joinColumns = {@JoinColumn(name = "chat_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")}
     )
-    @JsonView({UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
-
-    public List<User> getUsers() {
+    @JsonView({ChatViewJson.ChatFull.class,UserViewJson.UserFullDetails.class, UserViewJson.UserInChatDetails.class})
+    public Set<User> getUsers() {
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUsers(Set<User> users) {
         this.users = users;
     }
 
-    @OneToMany(mappedBy = "chat", orphanRemoval = true)
+    @OneToMany(mappedBy = "chat", orphanRemoval = true,fetch = FetchType.EAGER)
     @JsonView({MessageViewJson.MessageShortDetails.class})
-    public List<Message> getMessages() {
+    public Set<Message> getMessages() {
         return messages;
     }
 
-    public void setMessages(List<Message> message) {
+    public void setMessages(Set<Message> message) {
         this.messages = message;
     }
 
-    private List<Message> messages;
+    private Set<Message> messages;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,7 +67,7 @@ public class Chat {
         return id;
     }
 
-    public Chat(List<User> users, String name, List<Message> messages) {
+    public Chat(Set<User> users, String name, Set<Message> messages) {
         this.users = users;
         this.name = name;
         this.messages = messages;
